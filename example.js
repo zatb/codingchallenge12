@@ -72,5 +72,38 @@ d3.csv('mock_stock_data.csv').then(data => {
             .attr('d', line);
             
         path.exit().remove();
+
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0);
+            
+        // Add interactivity such that hovering over a data point displays a tooltip with detailed information (e.g., stock name, value, date).
+        svg.selectAll('circle')
+            .data(filteredData)
+            .enter().append('circle')
+            .attr('cx', d => x(d.Date))
+            .attr('cy', d => y(d.Price))
+            .attr('r', 5)
+            .on('mouseover', (event, d) => {
+                tooltip.transition()
+                    .duration(200)
+                    .style('opacity', .9);
+                tooltip.html(`Stock: ${d.Stock}<br>Date: ${d.Date.toLocaleDateString()}<br>Price: ${d.Price}`)
+                    .style('left', (event.pageX + 5) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+            })
+            .on('mouseout', d => {
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+            });
+
+        svg.selectAll('circle').exit().remove();
     };
+
+    stockSelect.on('change', updateChart);
+    d3.select('#start-date').on('change', updateChart);
+    d3.select('#end-date').on('change', updateChart);
+    
+    updateChart();
 });
